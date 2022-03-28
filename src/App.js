@@ -2,7 +2,7 @@ import DiaryWriter from './DiaryWriter';
 
 import './App.css';
 import DiaryList from './DiaryList'
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 
 function App() {
@@ -20,6 +20,27 @@ function App() {
     idRef.current += 1;
     setData([newData, ...data]);
   }
+
+  const getData = async() => {
+    const res = await fetch("https://jsonplaceholder.typicode.com/comments").then((res)=>
+    res.json());
+
+    const initData = res.map((it) => {
+      return({
+        author: it.email,
+        content: it.body,
+        created_date: new Date().getTime(),
+        feelNumber: Math.floor(Math.random() * 5) + 1,
+        id: idRef.current++
+      });
+    });
+
+    setData(initData);
+  }
+
+  useEffect(()=>{
+    getData();
+  },[])
 
   const removeData = (targetId) => {
     const newDiaryData = data.filter((it)=> it.id !== targetId);
