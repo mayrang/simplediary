@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 
-const DiaryWriter = () =>{
+const DiaryWriter = ({createData}) =>{
+    
     const [state, setState] = useState({
         author: "",
         content: "",
@@ -27,8 +28,14 @@ const DiaryWriter = () =>{
             return;
         }
         alert("일기 저장 성공");
-        console.log(state);
+        createData(state.author, state.content, state.feelNumber);
+        setState({
+            author: "",
+            content: "",
+            feelNumber: 1,
+        });
     }
+
     return (
         <div className="DiaryWriter">
             <div>
