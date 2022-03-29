@@ -2,11 +2,35 @@ import DiaryWriter from './DiaryWriter';
 
 import './App.css';
 import DiaryList from './DiaryList'
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import React, { useRef, useEffect, useMemo, useCallback, useReducer } from 'react';
 
+
+const reducer = (state, action) =>{
+  switch(action.type) {
+    case "INIT":
+      return action.data;
+    case "CREATE":
+      return (
+      [action.data, ...state]
+      );
+    case "REMOVE":
+      return (
+        state.filter((it) => it.id !== action.targetId)
+      );
+    case "EDIT":
+      return (
+        state.map((it)=> it.id === action.targetId ? {...it, content:action.newcontent} : it)
+      )
+    default:
+      return console.log(state);
+  }
+}
+
+export const DiaryStateContext = React.createContext();
+export const DiaryDispatchContext = React.createContext();
 
 function App() {
-  const [data, setData] = useState([])
+  const [data, dispatch] = useReducer(reducer, []);
   const idRef = useRef(0)
   const createData = useCallback((author, content, feelNumber) => {
     const created_date = new Date().getTime();
@@ -18,7 +42,7 @@ function App() {
       created_date: created_date,
     };
     idRef.current += 1;
-    setData((data) => [newData, ...data]);
+    dispatch({type:"CREATE", data:newData});
   }, [])
 
   const getData = async() => {
@@ -34,8 +58,7 @@ function App() {
         id: idRef.current++
       });
     });
-
-    setData(initData);
+    dispatch({type:"INIT", data: initData})
   }
 
   useEffect(()=>{
@@ -52,23 +75,34 @@ function App() {
   const {goodCount, badCount, goodRatio} = diaryAnalisys;
 
   const removeData = useCallback((targetId) => {
-    setData((data) => data.filter((it)=> it.id !== targetId));
+    dispatch({type:"REMOVE", targetId});
   }, []);
 
   const editData = useCallback((targetId, newContent) => {
-    setData((data) => data.map((it) => it.id === targetId ? {...it, content:newContent}:it));
+    dispatch({type:"EDIT", targetId, newContent});
   }, []);
 
+  const memorizeDispatch = useMemo(()=> {
+    return {createData, removeData, editData};
+  }, []);
+  
+
+  
   return (
     <div className="App">
-      <DiaryWriter createData={createData} />
-      <div>{goodCount}</div>
-      <div>{badCount}</div>
-      <div>{goodRatio}</div>
-      <DiaryList diaryList={data} removeData={removeData} editData={editData}/>
+      <DiaryStateContext.Provider value={data}>
+        <DiaryDispatchContext.Provider value={memorizeDispatch}>
+          <DiaryWriter />
+          <div>{goodCount}</div>
+          <div>{badCount}</div>
+          <div>{goodRatio}</div>
+          <DiaryList />
+        </DiaryDispatchContext.Provider>
+      </DiaryStateContext.Provider>
       
     </div>
   );
 }
 
 export default App;
+

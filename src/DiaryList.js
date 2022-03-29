@@ -1,24 +1,25 @@
 import DiaryItem from "./DiaryItem.js";
-import React from "react";
+import React, {useContext} from "react";
+import { DiaryStateContext } from "./App.js";
 
-const DiaryList = ({ diaryList, removeData, editData}) => {
+const DiaryList = () => {
+
+    const data = useContext(DiaryStateContext);
 
     return (
     <div className="DiaryList">
         <h2>일기 리스트</h2>
-        <h4>{diaryList.length}개의 일기가 있습니다.</h4>
+        <h4>{data.length}개의 일기가 있습니다.</h4>
         <div>
-            {diaryList.map((it) => (
-                <DiaryItem key={it.id} {...it} removeData={removeData} editData={editData}/>
+            {data.map((it) => (
+                <DiaryItem key={it.id} {...it}/>
             ))}
         </div>
     </div>
     );
 };
 
-DiaryList.defaultProps = {
-    diaryList : []
-};
+
 
 export default React.memo(DiaryList);
 
